@@ -7,6 +7,8 @@ import java.util.Random;
 public class TriangleGen
 {
 
+	private static final int ATTEMPTS_TO_DISTRIBUTE = 15;
+
 	public static BufferedImage generate(int width, int height, int numOfPoints, int minDistance)
 	{
 		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -27,8 +29,11 @@ public class TriangleGen
 			coords.get(i).z = randHeight;
 			String colorValueS = Integer.toHexString(randHeight);
 			int colorValue = Integer.parseInt(colorValueS + "00" + colorValueS, 16);
-			int radius = 5;
+			int radius = 50;
 			graphics.setColor(new Color(colorValue));
+			graphics.fillOval(coords.get(i).x + radius, coords.get(i).y + radius, radius * 2, radius * 2);
+			graphics.setColor(Color.BLACK);
+			radius = 20;
 			graphics.fillOval(coords.get(i).x + radius, coords.get(i).y + radius, radius * 2, radius * 2);
 		}
 		return img;
@@ -39,17 +44,28 @@ public class TriangleGen
 		ArrayList<Coordinate> coords = new ArrayList<>();
 		int totalNumOfPoints = width * height;
 		Random random = new Random();
-		for(int i = 0; i < height; i++)
+		int attempts = 0;
+		for(int f = 0; f < ATTEMPTS_TO_DISTRIBUTE; f++)
 		{
-			for(int j = 0; j < width; j++)
+			coords.clear();
+			for(int i = 0; i < height; i++)
 			{
-				int randInt = random.nextInt(totalNumOfPoints);
-				if(randInt < numOfPoints && minDistanceBetweenPoints(coords, width, height, j, i) >= minDistance)
+				for(int j = 0; j < width; j++)
 				{
-					coords.add(new Coordinate(j, i, 0));//We add the z value later.
+					int randInt = random.nextInt(totalNumOfPoints);
+					if(randInt < numOfPoints && minDistanceBetweenPoints(coords, width, height, j, i) >= minDistance && coords.size() < numOfPoints)
+					{
+						coords.add(new Coordinate(j, i, 0));//We add the z value later.
+					}
 				}
 			}
+			attempts = f + 1;
+			if(coords.size() >= numOfPoints)
+			{
+				break;
+			}
 		}
+		System.out.println("Number of attempts to distribute points: " + attempts + ". Points plotted: " + coords.size() + ".");
 		return coords;
 	}
 
