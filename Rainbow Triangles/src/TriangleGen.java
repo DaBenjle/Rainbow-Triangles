@@ -42,7 +42,6 @@ public class TriangleGen
 					graphics.setColor(Color.WHITE);
 					graphics.drawLine(curCoord.x, curCoord.y, newCoord.x, newCoord.y);
 					lines++;
-					System.out.println(i + " " + j);
 				}
 			}
 		}
@@ -75,23 +74,26 @@ public class TriangleGen
 		int attempts = 0;
 		for(int f = 0; f < ATTEMPTS_TO_DISTRIBUTE; f++)
 		{
-			coords.clear();
+			coords = new ArrayList<>();
 			for(int i = 0; i < height; i++)
 			{
 				for(int j = 0; j < width; j++)
 				{
 					int randInt = random.nextInt(totalNumOfPoints);
-					if(randInt < numOfPoints && minDistanceBetweenPoints(coords, width, height, j, i) >= minDistance && coords.size() < numOfPoints)
+					if(coords.size() < numOfPoints)
 					{
-						coords.add(new Coordinate(j, i, 0));//We add the z value later.
+						if(randInt < numOfPoints)
+						{
+							double curDis = minDistanceBetweenPoints(coords, width, height, j, i);
+							if(curDis <= minDistance)
+							{
+								coords.add(new Coordinate(j, i, 0));//We add the z value later.
+							}
+						}
 					}
 				}
 			}
 			attempts = f + 1;
-			if(coords.size() >= numOfPoints)
-			{
-				break;
-			}
 		}
 		System.out.println("Number of attempts to distribute points: " + attempts + ". Points plotted: " + coords.size() + ".");
 		return coords;
