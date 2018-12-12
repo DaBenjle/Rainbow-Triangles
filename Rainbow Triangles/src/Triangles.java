@@ -16,17 +16,18 @@ public class Triangles
 		int inputH = Integer.parseInt(args[2]);
 		int inputNumOfPoints = Integer.parseInt(args[3]);
 		int inputMinDistance = Integer.parseInt(args[4]);
-		new Triangles(inputF, inputW, inputH, inputNumOfPoints, inputMinDistance);
+		int inputMaxLineDistance = Integer.parseInt(args[5]);
+		new Triangles(inputF, inputW, inputH, inputNumOfPoints, inputMinDistance, inputMaxLineDistance);
 	}
 	
-	public Triangles(String inputF, int inputW, int inputH, int inputNumOfPoints, int inputMinDistance)
+	public Triangles(String inputF, int inputW, int inputH, int inputNumOfPoints, int inputMinDistance, int maxLineDistance)
 	{
 		fileName = inputF;
 		width = inputW;
 		height = inputH;
 		numOfPoints = inputNumOfPoints;
 		minDistance = inputMinDistance;
-		BufferedImage img = TriangleGen.generate(width, height, numOfPoints, minDistance);
+		BufferedImage img = TriangleGen.generate(width, height, numOfPoints, minDistance, maxLineDistance);
 		try
 		{
 			ImageIO.write(img, "png", new File(fileName + ".png"));
