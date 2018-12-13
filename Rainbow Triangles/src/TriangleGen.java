@@ -79,18 +79,22 @@ public class TriangleGen
 			{
 				for(int j = 0; j < width; j++)
 				{
-					int randInt = random.nextInt(totalNumOfPoints);
 					if(coords.size() < numOfPoints)
 					{
+						int randInt = random.nextInt(totalNumOfPoints);
 						if(randInt < numOfPoints)
 						{
 							double curDis = minDistanceBetweenPoints(coords, width, height, j, i);
-							if(curDis <= minDistance)
+							if(curDis >= minDistance)
 							{
 								coords.add(new Coordinate(j, i, 0));//We add the z value later.
 							}
 						}
 					}
+				}
+				if(coords.size() >= numOfPoints)
+				{
+					break;
 				}
 			}
 			attempts = f + 1;
