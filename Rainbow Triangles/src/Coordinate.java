@@ -1,6 +1,9 @@
+import java.util.ArrayList;
+
 public class Coordinate
 {
 	public int x, y, z;
+	public ArrayList<Coordinate> linesTo = new ArrayList<>();
 
 	public Coordinate()
 	{

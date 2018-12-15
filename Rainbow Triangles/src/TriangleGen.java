@@ -7,6 +7,7 @@ import java.util.Random;
 public class TriangleGen
 {
 
+	private static final int MIN_LINES_PER_POINT = 3;
 	private static final int ATTEMPTS_TO_DISTRIBUTE = 15;
 	
 	public static BufferedImage generate(int width, int height, int numOfPoints, int minDistance, int maxLineDistance)
@@ -37,15 +38,36 @@ public class TriangleGen
 			for(int j = 0; j < lessCoords.size(); j++)
 			{
 				Coordinate newCoord = lessCoords.get(j);
-				if(distanceBetweenPoints(curCoord, newCoord) < maxLineDistance)
+				if(distanceBetweenPoints(curCoord, newCoord) < maxLineDistance && !curCoord.linesTo.contains(newCoord))
 				{
 					graphics.setColor(Color.WHITE);
 					graphics.drawLine(curCoord.x, curCoord.y, newCoord.x, newCoord.y);
+					curCoord.linesTo.add(newCoord);
+					newCoord.linesTo.add(curCoord);
+					lines++;
+					System.out.println("CurCoord lines: " + curCoord.linesTo.size());
+				}
+			}
+		}
+		for(int i = 0; i < coords.size(); i++)
+		{
+			Coordinate curCoord = coords.get(i);
+			if(curCoord.linesTo.size() < MIN_LINES_PER_POINT)
+			{
+				ArrayList<Coordinate> nearPoints = getNearestPoints(coords, MIN_LINES_PER_POINT - curCoord.linesTo.size(), curCoord);
+				for(int f = 0; f < nearPoints.size(); f++)
+				{
+					System.out.println("Near Points Size: " + nearPoints.size());
+					Coordinate nearCoord = nearPoints.get(f);
+					graphics.setColor(Color.WHITE);
+					graphics.drawLine(curCoord.x, curCoord.y, nearCoord.x, nearCoord.y);
+					curCoord.linesTo.add(nearCoord);
+					nearCoord.linesTo.add(curCoord);
 					lines++;
 				}
 			}
 		}
-		System.out.println("===\n"  + lines);
+		System.out.println("===\nLines: "  + lines);
 		return img;
 	}
 
@@ -87,9 +109,13 @@ public class TriangleGen
 							double curDis = minDistanceBetweenPoints(coords, width, height, j, i);
 							if(curDis >= minDistance)
 							{
-								coords.add(new Coordinate(j, i, 0));//We add the z value later.
+								coords.add(new Coordinate(j, i, 0));//We add the z and value later.
 							}
 						}
+					}
+					else
+					{
+						break;
 					}
 				}
 				if(coords.size() >= numOfPoints)
@@ -98,6 +124,10 @@ public class TriangleGen
 				}
 			}
 			attempts = f + 1;
+			if(coords.size() >= numOfPoints)
+			{
+				break;
+			}
 		}
 		System.out.println("Number of attempts to distribute points: " + attempts + ". Points plotted: " + coords.size() + ".");
 		return coords;
@@ -106,19 +136,16 @@ public class TriangleGen
 	private static double minDistanceBetweenPoints(ArrayList<Coordinate> points, int width, int height, int x, int y)
 	{
 		double minDistance = Integer.MAX_VALUE;
+		double dis = Integer.MAX_VALUE - 10;
 		for(int i = 0; i < points.size(); i++)
 		{
 			double xDis = points.get(i).x - x;
 			double yDis = points.get(i).y - y;
-			double dis = Math.sqrt(xDis * xDis - yDis * yDis);
+			dis = Math.sqrt((xDis * xDis) + (yDis * yDis));
 			if(dis < minDistance)
 			{
 				minDistance = dis;
 			}
-		}
-		if(minDistance == Integer.MAX_VALUE)
-		{
-			System.out.println("Uh Oh");
 		}
 		return minDistance;
 	}
@@ -127,7 +154,44 @@ public class TriangleGen
 	{
 		double xDis = p1.x - p2.x;
 		double yDis = p1.y - p2.y;
-		return Math.sqrt(xDis * xDis - yDis * yDis);
+		return Math.sqrt(xDis * xDis + yDis * yDis);
+	}
+	
+	public static ArrayList<Coordinate> getNearestPoints(ArrayList<Coordinate> input, int num, Coordinate from)
+	{
+		ArrayList<Coordinate> output = new ArrayList<>();
+		for(int i = 0; i < input.size(); i++)
+		{
+			Coordinate inCoord = input.get(i);
+			double inDis = distanceBetweenPoints(inCoord, from);
+			double maxOutDis = Integer.MAX_VALUE;
+			int maxOutIndex = -1;
+			for(int f = 0; f < output.size(); f++)
+			{
+				double outDis = distanceBetweenPoints(output.get(f), from);
+				if(outDis < maxOutDis)
+				{
+					maxOutDis = outDis;
+					maxOutIndex = f;
+				}
+			}
+			if(inDis < maxOutDis)
+			{
+				if(maxOutIndex == -1 || output.size() < num)
+				{
+					output.add(inCoord);
+				}
+				else
+				{
+					output.set(maxOutIndex, inCoord);
+				}
+			}
+		}
+		if(output.size() != num)
+		{
+			System.out.println("Output Size: " + output.size());
+		}
+		return output;
 	}
 
 }
