@@ -45,7 +45,6 @@ public class TriangleGen
 					curCoord.linesTo.add(newCoord);
 					newCoord.linesTo.add(curCoord);
 					lines++;
-					System.out.println("CurCoord lines: " + curCoord.linesTo.size());
 				}
 			}
 		}
@@ -54,10 +53,13 @@ public class TriangleGen
 			Coordinate curCoord = coords.get(i);
 			if(curCoord.linesTo.size() < MIN_LINES_PER_POINT)
 			{
-				ArrayList<Coordinate> nearPoints = getNearestPoints(coords, MIN_LINES_PER_POINT - curCoord.linesTo.size(), curCoord);
+				ArrayList<Coordinate> coordsWithoutAttached = new ArrayList<>();
+				coordsWithoutAttached = deepCopy(coords);
+				coordsWithoutAttached.removeAll(curCoord.linesTo);
+				coordsWithoutAttached.remove(curCoord);
+				ArrayList<Coordinate> nearPoints = getNearestPoints(coordsWithoutAttached, MIN_LINES_PER_POINT - curCoord.linesTo.size(), curCoord);
 				for(int f = 0; f < nearPoints.size(); f++)
 				{
-					System.out.println("Near Points Size: " + nearPoints.size());
 					Coordinate nearCoord = nearPoints.get(f);
 					graphics.setColor(Color.WHITE);
 					graphics.drawLine(curCoord.x, curCoord.y, nearCoord.x, nearCoord.y);
@@ -164,32 +166,53 @@ public class TriangleGen
 		{
 			Coordinate inCoord = input.get(i);
 			double inDis = distanceBetweenPoints(inCoord, from);
-			double maxOutDis = Integer.MAX_VALUE;
-			int maxOutIndex = -1;
-			for(int f = 0; f < output.size(); f++)
+			double maxOutDis = -1;
+			ArrayList<Double> outDistances = new ArrayList<>();
+			if(output.size() >= num)
 			{
-				double outDis = distanceBetweenPoints(output.get(f), from);
-				if(outDis < maxOutDis)
+				for(int f = 0; f < output.size(); f++)//gets the current lowest distances and adds them to outDistances, also maxDistance which is used to prevent unneccesary tests
 				{
-					maxOutDis = outDis;
-					maxOutIndex = f;
+					double outDis = distanceBetweenPoints(output.get(f), from);
+					outDistances.add(Double.valueOf(outDis));
+					if(outDis > maxOutDis)
+					{
+						maxOutDis = outDis;
+					}
 				}
 			}
-			if(inDis < maxOutDis)
+			if(inDis < maxOutDis || maxOutDis == -1)//this will inject the out distances with the new lower distance, then remove the highest distance coord from output
 			{
-				if(maxOutIndex == -1 || output.size() < num)
+				outDistances.add(Double.valueOf(inDis));
+				output.add(inCoord);
+				if(maxOutDis != -1)
 				{
-					output.add(inCoord);
-				}
-				else
-				{
-					output.set(maxOutIndex, inCoord);
+					int index = outDistances.indexOf(getHighestValue(outDistances));
+					output.remove(index);
 				}
 			}
 		}
-		if(output.size() != num)
+		return output;
+	}
+	
+	public static <T extends Number> double getHighestValue(ArrayList<T> nums)
+	{
+		double highest = -1;
+		for(int i = 0; i < nums.size(); i++)
 		{
-			System.out.println("Output Size: " + output.size());
+			if(nums.get(i).doubleValue() > highest)
+			{
+				highest = nums.get(i).doubleValue();
+			}
+		}
+		return highest;
+	}
+	
+	public static <T> ArrayList<T> deepCopy(ArrayList<T> objects)
+	{
+		ArrayList<T> output = new ArrayList<T>();
+		for(int i = 0; i < objects.size(); i++)
+		{
+			output.add(objects.get(i));
 		}
 		return output;
 	}

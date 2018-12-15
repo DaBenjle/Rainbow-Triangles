@@ -16,4 +16,19 @@ public class Coordinate
 		this.y = y;
 		this.z = z;
 	}
+	
+	public String toString()
+	{
+		String lines = "";
+		for(int i = 0; i < linesTo.size(); i++)
+		{
+			lines += linesTo.get(i).toStringShort() + ' ';
+		}
+		return "X: " + x + " Y: " + y + " Z: " + z + " (Lines To: " + lines + ")"; 
+	}
+
+	private String toStringShort()
+	{
+		return "X: " + x + " Y: " + y + " Z: " + z;
+	}
 }
