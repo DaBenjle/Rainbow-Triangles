@@ -15,22 +15,14 @@ public class TriangleGen
 		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = (Graphics2D)img.getGraphics();
 		ArrayList<Coordinate> coords = createCoords(width, height, numOfPoints, minDistance);
-		Random random = new Random();
-		
-		int lines = 0;
-		for(int i = 0; i < coords.size(); i++)
-		{
-			Coordinate curCoord = coords.get(i);
-			double darknessMulti = random.nextDouble();
-			curCoord.z = (int)(darknessMulti * 100);
-			int red = (int)(0xff * darknessMulti);
-			int green = 0x0;
-			int blue = (int)(0xae * darknessMulti);
-			int colorValue = Integer.parseInt(red + String.valueOf(green) + blue, 16);
-			int radius = 50;
-			graphics.setColor(new Color(colorValue));
-			graphics.fillOval(curCoord.x - radius, curCoord.y - radius, radius * 2, radius * 2);
-		}
+		colorCircles(coords, graphics);
+		drawLines(coords, graphics, maxLineDistance);
+		return img;
+	}
+
+	private static void drawLines(ArrayList<Coordinate> coords, Graphics2D graphics, int maxLineDistance)
+	{
+		//draws initial close lines
 		for(int i = 0; i < coords.size(); i++)
 		{
 			Coordinate curCoord = coords.get(i);
@@ -44,10 +36,11 @@ public class TriangleGen
 					graphics.drawLine(curCoord.x, curCoord.y, newCoord.x, newCoord.y);
 					curCoord.linesTo.add(newCoord);
 					newCoord.linesTo.add(curCoord);
-					lines++;
 				}
 			}
 		}
+		
+		//if a coord does not have enough lines, then it draws more, may be the cause of abnormally long lines.
 		for(int i = 0; i < coords.size(); i++)
 		{
 			Coordinate curCoord = coords.get(i);
@@ -65,12 +58,27 @@ public class TriangleGen
 					graphics.drawLine(curCoord.x, curCoord.y, nearCoord.x, nearCoord.y);
 					curCoord.linesTo.add(nearCoord);
 					nearCoord.linesTo.add(curCoord);
-					lines++;
 				}
 			}
 		}
-		System.out.println("===\nLines: "  + lines);
-		return img;
+	}
+
+	private static void colorCircles(ArrayList<Coordinate> coords, Graphics2D graphics)
+	{
+		Random random = new Random();
+		for(int i = 0; i < coords.size(); i++)
+		{
+			Coordinate curCoord = coords.get(i);
+			double darknessMulti = random.nextDouble();
+			curCoord.z = (int)(darknessMulti * 100);
+			int red = (int)(0xff * darknessMulti);
+			int green = 0x0;
+			int blue = (int)(0xae * darknessMulti);
+			int colorValue = Integer.parseInt(red + String.valueOf(green) + blue, 16);
+			int radius = 50;
+			graphics.setColor(new Color(colorValue));
+			graphics.fillOval(curCoord.x - radius, curCoord.y - radius, radius * 2, radius * 2);
+		}
 	}
 
 	private static <T> ArrayList<T> shrinkArray(ArrayList<T> input, int index)
@@ -215,6 +223,39 @@ public class TriangleGen
 			output.add(objects.get(i));
 		}
 		return output;
+	}
+	
+	private static class Coordinate
+	{
+		public int x, y, z;
+		public ArrayList<Coordinate> linesTo = new ArrayList<>();
+
+		public Coordinate(int x, int y, int z)
+		{
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		}
+		
+		public String toString()
+		{
+			String lines = "";
+			for(int i = 0; i < linesTo.size(); i++)
+			{
+				lines += linesTo.get(i).toStringShort() + ' ';
+			}
+			return "X: " + x + " Y: " + y + " Z: " + z + " (Lines To: " + lines + ")"; 
+		}
+
+		private String toStringShort()
+		{
+			return "X: " + x + " Y: " + y + " Z: " + z;
+		}
+	}
+	
+	private static class Triangle
+	{
+		
 	}
 
 }
