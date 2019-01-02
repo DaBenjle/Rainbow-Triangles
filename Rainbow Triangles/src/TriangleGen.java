@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Collections;
+import java.util.Comparator;
 
 public class TriangleGen
 {
@@ -327,9 +328,9 @@ public class TriangleGen
 		
 		private static void drawLines(ArrayList<Line> lines, Graphics2D graphics)
 		{
+			graphics.setColor(Color.WHITE);
 			for(Line line : lines)
 			{
-				graphics.setColor(Color.WHITE);
 				graphics.drawLine(line.p1x, line.p1y, line.p2x, line.p2y);
 			}
 		}
@@ -350,7 +351,9 @@ public class TriangleGen
 		
 		public static void removeCrossingLines(ArrayList<Line> lines)
 		{
-			Collections.shuffle(lines);
+			//Collections.shuffle(lines);
+			//Instead of just shuffling, i sort it from shortest to longest, that way the shortest lines that cross are removed first.
+			lines.sort(new SortByLength());
 			ArrayList<Line> removedLines = new ArrayList<>();
 			for(int i = 0; i < lines.size(); i++)
 			{
@@ -371,6 +374,15 @@ public class TriangleGen
 			for(int i = 0; i < removedLines.size(); i++)
 			{
 				lines.remove(removedLines.get(i));
+			}
+		}
+		
+		private static class SortByLength implements Comparator<Line>
+		{
+			public int compare(Line a, Line b)
+			{
+				//TODO
+				return 0;
 			}
 		}
 	}
