@@ -1,18 +1,24 @@
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Random;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
 import java.util.Collections;
 import java.util.Comparator;
 
 public class TriangleGen
 {
-	
+
 	private static final int MIN_LINES_PER_POINT = 3;
 	private static final int ATTEMPTS_TO_DISTRIBUTE = 15;
-	
-	public static BufferedImage generate(int width, int height, int numOfPoints, int minDistance, int maxLineDistance)
+
+	public static BufferedImage[] generate(int width, int height, int numOfPoints, int minDistance, int maxLineDistance)
 	{
 		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics = (Graphics2D) img.getGraphics();
@@ -20,12 +26,15 @@ public class TriangleGen
 		ArrayList<Line> lines = new ArrayList<Line>();
 		colorCircles(coords, graphics);
 		Line.genLines(coords, lines, maxLineDistance);
+		BufferedImage b4 = new BufferedImage(img.getColorModel(), img.copyData(null), img.isAlphaPremultiplied(), null);
+		Line.drawLines(lines, (Graphics2D)b4.getGraphics());
 		Line.removeCrossingLines(lines);
 		Line.drawLines(lines, graphics);
 		Collections.shuffle(lines);
-		return img;
+		BufferedImage[] imgs = {b4, img};
+		return imgs;
 	}
-	
+
 	private static void colorCircles(ArrayList<Coordinate> coords, Graphics2D graphics)
 	{
 		Random random = new Random();
@@ -43,7 +52,7 @@ public class TriangleGen
 			graphics.fillOval(curCoord.x - radius, curCoord.y - radius, radius * 2, radius * 2);
 		}
 	}
-	
+
 	private static <T> ArrayList<T> shrinkArray(ArrayList<T> input, int index)
 	{
 		ArrayList<T> list = new ArrayList<>();
@@ -60,7 +69,7 @@ public class TriangleGen
 		}
 		return list;
 	}
-	
+
 	public static <T extends Number> double getHighestValue(ArrayList<T> nums)
 	{
 		double highest = -1;
@@ -73,19 +82,19 @@ public class TriangleGen
 		}
 		return highest;
 	}
-	
+
 	private static class Coordinate
 	{
 		public int x, y, z;
 		public ArrayList<Coordinate> linesTo = new ArrayList<>();
-		
+
 		public Coordinate(int x, int y, int z)
 		{
 			this.x = x;
 			this.y = y;
 			this.z = z;
 		}
-		
+
 		public String toString()
 		{
 			String lines = "";
@@ -95,14 +104,15 @@ public class TriangleGen
 			}
 			return "X: " + x + " Y: " + y + " Z: " + z + " (Lines To: " + lines + ")";
 		}
-		
+
 		private String toStringShort()
 		{
 			return "X: " + x + " Y: " + y + " Z: " + z;
 		}
-		
+
 		public static Coordinate getHighestPoint(Coordinate... coords)
 		{
+			//Technically the lowest y value, but this makes it the highest on the screen
 			Coordinate highest = new Coordinate(-1, -1, -1);
 			for (Coordinate cur : coords)
 			{
@@ -113,7 +123,7 @@ public class TriangleGen
 			}
 			return highest;
 		}
-		
+
 		public static ArrayList<Coordinate> getNearestPoints(ArrayList<Coordinate> input, int num, Coordinate from)
 		{
 			ArrayList<Coordinate> output = new ArrayList<>();
@@ -152,14 +162,14 @@ public class TriangleGen
 			}
 			return output;
 		}
-		
+
 		public static double distanceBetweenPoints(Coordinate p1, Coordinate p2)
 		{
 			double xDis = p1.x - p2.x;
 			double yDis = p1.y - p2.y;
 			return Math.sqrt(xDis * xDis + yDis * yDis);
 		}
-		
+
 		private static double minDistanceBetweenPoints(ArrayList<Coordinate> points, int width, int height, int x,
 				int y)
 		{
@@ -177,7 +187,7 @@ public class TriangleGen
 			}
 			return minDistance;
 		}
-		
+
 		private static ArrayList<Coordinate> createCoords(int width, int height, int numOfPoints, int minDistance)
 		{
 			ArrayList<Coordinate> coords = new ArrayList<>();
@@ -224,30 +234,31 @@ public class TriangleGen
 			return coords;
 		}
 	}
-	
+
 	private static class Triangle
 	{
-		
+
 	}
-	
+
 	private static enum Orientation
 	{
 		CLOCKWISE, COUNTER_CLOCKWISE;
 	}
-	
+
 	public static <T> ArrayList<T> deepCopy(ArrayList<T> list)
 	{
 		ArrayList<T> answer = new ArrayList<T>();
-		for(T el : list)
+		for (T el : list)
 		{
 			answer.add(el);
 		}
 		return answer;
 	}
-	
+
 	private static class Line
 	{
-		public int p1x, p1y, p2x, p2y;
+		private int p1x, p1y, p2x, p2y;
+		public Coordinate p1, p2;
 		
 		public Line(int p1x, int p1y, int p2x, int p2y)
 		{
@@ -255,8 +266,10 @@ public class TriangleGen
 			this.p1y = p1y;
 			this.p2x = p2x;
 			this.p2y = p2y;
+			p1 = new Coordinate(p1x, p1y, 0);
+			p2 = new Coordinate(p2x, p2y, 0);
 		}
-		
+
 		/*
 		 * @returns the orientation of the shape created by @param Orientation being the
 		 * direction of the points in the order p1, p2, p3
@@ -264,7 +277,7 @@ public class TriangleGen
 		public static Orientation getOrientation(Coordinate p1, Coordinate p2, Coordinate p3)
 		{
 			Coordinate highestPoint = Coordinate.getHighestPoint(p1, p2, p3);
-			if (highestPoint.equals(p1))
+			if(highestPoint.equals(p1))
 			{
 				if (p2.x > p3.x)
 				{
@@ -279,10 +292,13 @@ public class TriangleGen
 			{
 				return Orientation.CLOCKWISE;
 			}
-			else if (highestPoint.equals(p3)) { return Orientation.COUNTER_CLOCKWISE; }
+			else if (highestPoint.equals(p3))
+			{
+				return Orientation.COUNTER_CLOCKWISE;
+			}
 			return null;
 		}
-		
+
 		public static void genLines(ArrayList<Coordinate> coords, ArrayList<Line> lines, int maxLineDistance)
 		{
 			// draws initial close lines
@@ -302,7 +318,7 @@ public class TriangleGen
 					}
 				}
 			}
-			
+
 			// if a coord does not have enough lines, then it draws more, may be the cause
 			// of abnormally long lines.
 			for (int i = 0; i < coords.size(); i++)
@@ -314,7 +330,8 @@ public class TriangleGen
 					coordsWithoutAttached = deepCopy(coords);
 					coordsWithoutAttached.removeAll(curCoord.linesTo);
 					coordsWithoutAttached.remove(curCoord);
-					ArrayList<Coordinate> nearPoints = Coordinate.getNearestPoints(coordsWithoutAttached, MIN_LINES_PER_POINT - curCoord.linesTo.size(), curCoord);
+					ArrayList<Coordinate> nearPoints = Coordinate.getNearestPoints(coordsWithoutAttached,
+							MIN_LINES_PER_POINT - curCoord.linesTo.size(), curCoord);
 					for (int f = 0; f < nearPoints.size(); f++)
 					{
 						Coordinate nearCoord = nearPoints.get(f);
@@ -325,66 +342,78 @@ public class TriangleGen
 				}
 			}
 		}
-		
+
 		private static void drawLines(ArrayList<Line> lines, Graphics2D graphics)
 		{
 			graphics.setColor(Color.WHITE);
-			for(Line line : lines)
+			for (Line line : lines)
 			{
 				graphics.drawLine(line.p1x, line.p1y, line.p2x, line.p2y);
 			}
 		}
-		
-		//see https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+
+		// see https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
 		public boolean crosses(Line line)
 		{
-			//this could be simplified, by removing the if, and just returning the expression, but that would hurt my head even more, so don't
-			if((getOrientation(new Coordinate(p1x, p1y, -1), new Coordinate(p2x, p2y, -1), new Coordinate(line.p1x, line.p1y, -1)) != 
-					getOrientation(new Coordinate(p1x, p1y, -1), new Coordinate(p2x, p2y, -1), new Coordinate(line.p2x, line.p2y, -1))) &&
-					getOrientation(new Coordinate(line.p1x, line.p1y, -1), new Coordinate(line.p2x, line.p2y, -1), new Coordinate(p1x, p1y, -1)) !=
-					getOrientation(new Coordinate(line.p1x, line.p1y, -1), new Coordinate(line.p2x, line.p2y, -1), new Coordinate(p2x, p2y, -1)))
-			{
-				return true;
-			}
-			return false;
+			//true if they're the same
+			boolean firstDif = getOrientation(p1, p2, line.p1) == getOrientation(p1, p2, line.p2);
+			boolean secondDif = getOrientation(line.p1, line.p2, p1) == getOrientation(line.p1, line.p2, p2);
+			return !firstDif && !secondDif;
 		}
-		
+
 		public static void removeCrossingLines(ArrayList<Line> lines)
 		{
-			//Collections.shuffle(lines);
-			//Instead of just shuffling, i sort it from shortest to longest, that way the shortest lines that cross are removed first.
-			lines.sort(new SortByLength());
-			ArrayList<Line> removedLines = new ArrayList<>();
-			for(int i = 0; i < lines.size(); i++)
+			// Instead of just shuffling, i sort it from longest to shortest, that way the
+			// longest lines that cross are removed first. Because they are more likely to 
+			// cross multiple lines, meaning that they are more valuable to remove because less lines are removed.
+			lines.sort(new SortByLength().reversed());
+			for (int i = 0; i < lines.size(); i++)
 			{
-				Line curLine = lines.get(i);
-				if(!removedLines.contains(curLine))
+				try
 				{
-					ArrayList<Line> shorterArray = shrinkArray(lines, i);
-					for(int j = 0; j < shorterArray.size(); j++)
+					Line line = lines.get(i);
+					//creates another list without the current line
+					ArrayList<Line> shorter = shrinkArray(lines, i); 
+					for(int j = 0; j < shorter.size(); j++)
 					{
-						Line otherLine = shorterArray.get(j);
-						if(curLine.crosses(otherLine))
+						Line curLine = shorter.get(j);
+						if(line.crosses(curLine) && !line.connectsTo(curLine))
 						{
-							removedLines.add(otherLine);
+							lines.remove(line); //not cur line because line is longer than cur line, see above comments
+							break;
 						}
 					}
-				}
-			}
-			for(int i = 0; i < removedLines.size(); i++)
-			{
-				lines.remove(removedLines.get(i));
+				}catch(IndexOutOfBoundsException ex){break;}
 			}
 		}
-		
+
+		private boolean connectsTo(Line curLine)
+		{
+			return p1.equals(curLine.p1) || p1.equals(curLine.p2) || p2.equals(curLine.p1) || p2.equals(curLine.p2);
+		}
+
 		private static class SortByLength implements Comparator<Line>
 		{
 			public int compare(Line a, Line b)
 			{
-				//TODO
-				return 0;
+				double aL = Coordinate.distanceBetweenPoints(new Coordinate(a.p1x, a.p1y, 0),
+						new Coordinate(a.p2x, a.p2y, 0));
+				double bL = Coordinate.distanceBetweenPoints(new Coordinate(b.p1x, b.p1y, 0),
+						new Coordinate(b.p2x, b.p2y, 0));
+				if (aL < bL)
+				{
+					return -1;
+				}
+				else if (aL == bL)
+				{
+					return 0;
+				}
+				else
+				{
+					return 1;
+				}
 			}
 		}
 	}
-	
+
 }

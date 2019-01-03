@@ -27,10 +27,13 @@ public class Triangles
 		height = inputH;
 		numOfPoints = inputNumOfPoints;
 		minDistance = inputMinDistance;
-		BufferedImage img = TriangleGen.generate(width, height, numOfPoints, minDistance, maxLineDistance);
+		BufferedImage[] imgs = TriangleGen.generate(width, height, numOfPoints, minDistance, maxLineDistance);
+		BufferedImage img = imgs[1];
+		BufferedImage b4 = imgs[0];
 		try
 		{
 			ImageIO.write(img, "png", new File(fileName + ".png"));
+			ImageIO.write(b4, "png", new File(fileName + "b4" + ".png"));
 		}
 		catch (IOException e)
 		{
