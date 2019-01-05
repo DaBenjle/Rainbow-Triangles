@@ -236,11 +236,6 @@ public class TriangleGen
 		}
 	}
 	
-	private static class Triangle
-	{
-		
-	}
-	
 	private static enum Orientation
 	{
 		CLOCKWISE, COUNTER_CLOCKWISE;
@@ -323,6 +318,8 @@ public class TriangleGen
 			
 			// if a coord does not have enough lines, then it draws more, may be the cause
 			// of abnormally long lines.
+			// also will cause several points which already have 3 lines coming off them, 
+			// to grow more in order to satisfy the needs of further points.
 			for (int i = 0; i < coords.size(); i++)
 			{
 				Coordinate curCoord = coords.get(i);
