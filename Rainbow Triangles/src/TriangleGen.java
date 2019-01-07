@@ -21,15 +21,44 @@ public class TriangleGen
 		ArrayList<Line> lines = new ArrayList<Line>();
 		colorCircles(coords, graphics);
 		Line.genLines(coords, lines, maxLineDistance);
+		
+		//remove this later
 		BufferedImage b4 = new BufferedImage(img.getColorModel(), img.copyData(null), img.isAlphaPremultiplied(), null);
 		Line.drawLines(lines, (Graphics2D) b4.getGraphics());
+		
 		Line.removeCrossingLines(lines);
 		Line.drawLines(lines, graphics);
-		Collections.shuffle(lines);
+		//ArrayList<ArrayList<Coordinate>> groups = getGroups(coords);
 		BufferedImage[] imgs =
 		{ b4, img };
 		return imgs;
 	}
+	
+	/*private static ArrayList<ArrayList<Coordinate>> getGroups(ArrayList<Coordinate> coords)
+	{
+		ArrayList<ArrayList<Coordinate>> groups = new ArrayList<>();
+		
+		//Adds all 
+		for(int i = 0; i < coords.size(); i++)
+		{
+			Coordinate curCoord = coords.get(i);
+			ArrayList<Coordinate> curGroup = getGroup(curCoord);
+		}
+		return groups;
+	}
+	
+	private static ArrayList<Coordinate> getGroup(Coordinate coord)
+	{
+		ArrayList<Coordinate> output = new ArrayList<>();
+		for(Coordinate curCoord : coord.linesTo)
+		{
+			ArrayList<Coordinate> curCoords = getGroup(curCoord);
+			
+			//removes duplicate coords
+			for(cu)
+		}
+		return output;
+	}*/
 	
 	private static void colorCircles(ArrayList<Coordinate> coords, Graphics2D graphics)
 	{
@@ -138,7 +167,7 @@ public class TriangleGen
 				{
 					// gets the current lowest distances and adds them to
 					// outDistances, also maxDistance which is used to prevent
-					// unneccesary tests
+					// unnecesary tests
 					for (int f = 0; f < output.size(); f++)
 					{
 						double outDis = distanceBetweenPoints(output.get(f), from);
