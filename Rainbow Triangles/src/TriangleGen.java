@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Random;
 
 import java.util.Collections;
@@ -34,7 +35,7 @@ public class TriangleGen
 		return imgs;
 	}
 	
-	/*private static ArrayList<ArrayList<Coordinate>> getGroups(ArrayList<Coordinate> coords)
+	private static ArrayList<ArrayList<Coordinate>> getGroups(ArrayList<Coordinate> coords)
 	{
 		ArrayList<ArrayList<Coordinate>> groups = new ArrayList<>();
 		
@@ -47,18 +48,27 @@ public class TriangleGen
 		return groups;
 	}
 	
-	private static ArrayList<Coordinate> getGroup(Coordinate coord)
+	private static ArrayList<Coordinate> getGroup(Coordinate coord, ArrayList<Coordinate> usedCoords)
 	{
 		ArrayList<Coordinate> output = new ArrayList<>();
-		for(Coordinate curCoord : coord.linesTo)
+		ArrayList<Coordinate> linesToWithoutUsedCoords = deepCopy(coord.linesTo);
+		linesToWithoutUsedCoords.removeAll(usedCoords);
+		for(Coordinate unusedCoord : linesToWithoutUsedCoords)
 		{
-			ArrayList<Coordinate> curCoords = getGroup(curCoord);
-			
-			//removes duplicate coords
-			for(cu)
+			output.add(unusedCoord);
+			usedCoords.add(unusedCoord);
+			ArrayList<Coordinate> unusedCoordLinesToWithoutUsed = deepCopy(unusedCoord.linesTo);
+			unusedCoordLinesToWithoutUsed.removeAll(usedCoords);
+			for(Coordinate curUnusedCoordLineToThis : unusedCoordLinesToWithoutUsed)
+			{
+				if(!usedCoords.contains(curUnusedCoordLineToThis))
+				{
+					output.add(curUnusedCoordLineToThis);
+					usedCoords.add(curUnusedCoordLineToThis);
+				}
+			}
 		}
-		return output;
-	}*/
+	}
 	
 	private static void colorCircles(ArrayList<Coordinate> coords, Graphics2D graphics)
 	{
