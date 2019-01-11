@@ -35,6 +35,19 @@ public class TriangleGen
 		return imgs;
 	}
 	
+	public static <T> ArrayList<T> getAllFromNestedList(ArrayList<ArrayList<T>> input)
+	{
+		ArrayList<T> output = new ArrayList<T>();
+		for(ArrayList<T> curList : input)
+		{
+			for(T el : curList)
+			{
+				output.add(el);
+			}
+		}
+		return output;
+	}
+	
 	private static ArrayList<ArrayList<Coordinate>> getGroups(ArrayList<Coordinate> coords)
 	{
 		ArrayList<ArrayList<Coordinate>> groups = new ArrayList<>();
@@ -43,7 +56,8 @@ public class TriangleGen
 		for(int i = 0; i < coords.size(); i++)
 		{
 			Coordinate curCoord = coords.get(i);
-			ArrayList<Coordinate> curGroup = getGroup(curCoord);
+			ArrayList<Coordinate> curGroup = getGroup(curCoord, getAllFromNestedList(groups));
+			groups.add(curGroup);
 		}
 		return groups;
 	}
