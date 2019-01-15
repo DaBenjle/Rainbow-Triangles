@@ -2,10 +2,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Random;
 
-import java.util.Collections;
 import java.util.Comparator;
 
 public class TriangleGen
@@ -51,37 +49,40 @@ public class TriangleGen
 	private static ArrayList<ArrayList<Coordinate>> getGroups(ArrayList<Coordinate> coords)
 	{
 		ArrayList<ArrayList<Coordinate>> groups = new ArrayList<>();
-		
-		//Adds all 
+		ArrayList<Coordinate> usedCoords = getAllFromNestedList(groups);
 		for(int i = 0; i < coords.size(); i++)
 		{
+			usedCoords = getAllFromNestedList(groups);
 			Coordinate curCoord = coords.get(i);
-			ArrayList<Coordinate> curGroup = getGroup(curCoord, getAllFromNestedList(groups));
-			groups.add(curGroup);
+			if(!usedCoords.contains(curCoord))
+			{
+				ArrayList<Coordinate> curGroup = getGroup(curCoord, usedCoords);
+				groups.add(curGroup);
+			}
 		}
 		return groups;
 	}
 	
+	//This may work, but its untested and im sleepy so quadruple check it
 	private static ArrayList<Coordinate> getGroup(Coordinate coord, ArrayList<Coordinate> usedCoords)
 	{
 		ArrayList<Coordinate> output = new ArrayList<>();
-		ArrayList<Coordinate> linesToWithoutUsedCoords = deepCopy(coord.linesTo);
-		linesToWithoutUsedCoords.removeAll(usedCoords);
-		for(Coordinate unusedCoord : linesToWithoutUsedCoords)
+		if(!usedCoords.contains(coord))
 		{
-			output.add(unusedCoord);
-			usedCoords.add(unusedCoord);
-			ArrayList<Coordinate> unusedCoordLinesToWithoutUsed = deepCopy(unusedCoord.linesTo);
-			unusedCoordLinesToWithoutUsed.removeAll(usedCoords);
-			for(Coordinate curUnusedCoordLineToThis : unusedCoordLinesToWithoutUsed)
+			output.add(coord);
+			usedCoords.add(coord);
+			for(int i = 0; i < coord.linesTo.size(); i++)
 			{
-				if(!usedCoords.contains(curUnusedCoordLineToThis))
+				Coordinate curCoord = coord.linesTo.get(i);
+				if(!usedCoords.contains(curCoord))
 				{
-					output.add(curUnusedCoordLineToThis);
-					usedCoords.add(curUnusedCoordLineToThis);
+					output.add(curCoord);
+					usedCoords.add(curCoord);
+					output.addAll(getGroup(curCoord, usedCoords));
 				}
 			}
 		}
+		return output;
 	}
 	
 	private static void colorCircles(ArrayList<Coordinate> coords, Graphics2D graphics)
