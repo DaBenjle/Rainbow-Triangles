@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -20,17 +21,41 @@ public class TriangleGen
 		ArrayList<Line> lines = new ArrayList<Line>();
 		colorCircles(coords, graphics);
 		Line.genLines(coords, lines, maxLineDistance);
+		Line.removeCrossingLines(lines);
+		Line.drawLines(lines, graphics);
 		
 		//remove this later
 		BufferedImage b4 = new BufferedImage(img.getColorModel(), img.copyData(null), img.isAlphaPremultiplied(), null);
-		Line.drawLines(lines, (Graphics2D) b4.getGraphics());
 		
-		Line.removeCrossingLines(lines);
-		Line.drawLines(lines, graphics);
-		//ArrayList<ArrayList<Coordinate>> groups = getGroups(coords);
+		Color[] colors = getAllBasicColors();
+		int radius = 50;
+		ArrayList<ArrayList<Coordinate>> groups = getGroups(coords);
+		for(int i = 0; i < groups.size(); i++)
+		{
+			ArrayList<Coordinate> curGroup = groups.get(i);
+			for(Coordinate curCoord : curGroup)
+			{
+				graphics.setColor(colors[i]);
+				graphics.fillOval(curCoord.x - radius, curCoord.y - radius, radius * 2, radius * 2);
+			}
+		}
+		
 		BufferedImage[] imgs =
 		{ b4, img };
 		return imgs;
+	}
+	
+	public static Color[] getAllBasicColors()
+	{
+		Field[] fields = Color.class.getDeclaredFields();
+		for(Field field : fields)
+		{
+			field.setAccessible(true);
+			if(field.isAccessible())
+			{
+				
+			}
+		}
 	}
 	
 	public static <T> ArrayList<T> getAllFromNestedList(ArrayList<ArrayList<T>> input)
