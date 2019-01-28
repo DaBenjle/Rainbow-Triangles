@@ -3,6 +3,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 
 import java.util.Comparator;
@@ -47,15 +48,24 @@ public class TriangleGen
 	
 	public static Color[] getAllBasicColors()
 	{
-		Field[] fields = Color.class.getDeclaredFields();
+		Field[] fields = Color.class.getFields();
+		ArrayList<Color> colors = new ArrayList<>();
 		for(Field field : fields)
 		{
-			field.setAccessible(true);
-			if(field.isAccessible())
+			try
 			{
-				
+				if(field.get(null) instanceof Color && !field.get(null).equals(Color.BLACK))
+				{
+					colors.add((Color)field.get(null));
+				}
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
 			}
 		}
+		Collections.shuffle(colors);
+		return colors.toArray(new Color[colors.size()]);
 	}
 	
 	public static <T> ArrayList<T> getAllFromNestedList(ArrayList<ArrayList<T>> input)
