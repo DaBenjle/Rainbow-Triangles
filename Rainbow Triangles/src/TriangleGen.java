@@ -376,14 +376,14 @@ public class TriangleGen
 		private int p1x, p1y, p2x, p2y;
 		public Coordinate p1, p2;
 		
-		public Line(int p1x, int p1y, int p2x, int p2y)
+		public Line(Coordinate p1, Coordinate p2)
 		{
-			this.p1x = p1x;
-			this.p1y = p1y;
-			this.p2x = p2x;
-			this.p2y = p2y;
-			p1 = new Coordinate(p1x, p1y, 0);
-			p2 = new Coordinate(p2x, p2y, 0);
+			this.p1 = p1;
+			this.p2 = p2;
+			this.p1x = p1.x;
+			this.p1y = p1.y;
+			this.p2x = p2.x;
+			this.p2y = p2.y;
 		}
 		
 		public static void genLines(ArrayList<Coordinate> coords, ArrayList<Line> lines, int maxLineDistance)
@@ -400,7 +400,7 @@ public class TriangleGen
 					{
 						curCoord.linesTo.add(newCoord);
 						newCoord.linesTo.add(curCoord);
-						lines.add(new Line(curCoord.x, curCoord.y, newCoord.x, newCoord.y));
+						lines.add(new Line(curCoord, newCoord));
 					}
 				}
 			}
@@ -424,7 +424,7 @@ public class TriangleGen
 						Coordinate nearCoord = nearPoints.get(f);
 						curCoord.linesTo.add(nearCoord);
 						nearCoord.linesTo.add(curCoord);
-						lines.add(new Line(curCoord.x, curCoord.y, nearCoord.x, nearCoord.y));
+						lines.add(new Line(curCoord, nearCoord));
 					}
 				}
 			}
@@ -478,7 +478,10 @@ public class TriangleGen
 			}
 			for(int i = 0; i < removedLines.size(); i++)
 			{
-				lines.remove(removedLines.get(i));
+				Line curLine = removedLines.get(i);
+				lines.remove(curLine);
+				curLine.p1.linesTo.remove(curLine.p2);
+				curLine.p2.linesTo.remove(curLine.p1);
 			}
 		}
 		
