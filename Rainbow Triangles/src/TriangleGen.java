@@ -28,19 +28,6 @@ public class TriangleGen
 		//remove this later
 		BufferedImage b4 = new BufferedImage(img.getColorModel(), img.copyData(null), img.isAlphaPremultiplied(), null);
 		
-		Color[] colors = getAllBasicColors();
-		int radius = 50;
-		ArrayList<ArrayList<Coordinate>> groups = getGroups(coords);
-		for(int i = 0; i < groups.size(); i++)
-		{
-			ArrayList<Coordinate> curGroup = groups.get(i);
-			for(Coordinate curCoord : curGroup)
-			{
-				graphics.setColor(colors[i]);
-				graphics.fillOval(curCoord.x - radius, curCoord.y - radius, radius * 2, radius * 2);
-			}
-		}
-		
 		BufferedImage[] imgs =
 		{ b4, img };
 		return imgs;
@@ -68,6 +55,7 @@ public class TriangleGen
 		return colors.toArray(new Color[colors.size()]);
 	}
 	
+	//TODO remove later if neccessary
 	public static <T> ArrayList<T> getAllFromNestedList(ArrayList<ArrayList<T>> input)
 	{
 		ArrayList<T> output = new ArrayList<T>();
@@ -76,45 +64,6 @@ public class TriangleGen
 			for(T el : curList)
 			{
 				output.add(el);
-			}
-		}
-		return output;
-	}
-	
-	private static ArrayList<ArrayList<Coordinate>> getGroups(ArrayList<Coordinate> coords)
-	{
-		ArrayList<ArrayList<Coordinate>> groups = new ArrayList<>();
-		ArrayList<Coordinate> usedCoords = getAllFromNestedList(groups);
-		for(int i = 0; i < coords.size(); i++)
-		{
-			usedCoords = getAllFromNestedList(groups);
-			Coordinate curCoord = coords.get(i);
-			if(!usedCoords.contains(curCoord))
-			{
-				ArrayList<Coordinate> curGroup = getGroup(curCoord, usedCoords);
-				groups.add(curGroup);
-			}
-		}
-		return groups;
-	}
-	
-	//This may work, but its untested and im sleepy so quadruple check it
-	private static ArrayList<Coordinate> getGroup(Coordinate coord, ArrayList<Coordinate> usedCoords)
-	{
-		ArrayList<Coordinate> output = new ArrayList<>();
-		if(!usedCoords.contains(coord))
-		{
-			output.add(coord);
-			usedCoords.add(coord);
-			for(int i = 0; i < coord.linesTo.size(); i++)
-			{
-				Coordinate curCoord = coord.linesTo.get(i);
-				if(!usedCoords.contains(curCoord))
-				{
-					output.add(curCoord);
-					usedCoords.add(curCoord);
-					output.addAll(getGroup(curCoord, usedCoords));
-				}
 			}
 		}
 		return output;
